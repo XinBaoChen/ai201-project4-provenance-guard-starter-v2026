@@ -39,6 +39,15 @@ XinBao Chen
 <!-- The path a submission takes, from arriving to the label a reader sees.
      Six or seven steps — this is the trace you wrote in Milestone 1. -->
 
+1. A writer sends `text` and `creator_id` as JSON to `POST /submit`.
+2. The route validates and extracts the submission.
+3. `detector.model_signal` measures how predictable the text is to the local
+   language model and returns a 0–1 model score.
+4. `stylometry.style_signal` measures sentence, vocabulary, and punctuation
+   patterns and returns a 0–1 style score.
+5. `scoring.combine_signals` combines both scores into one AI-likelihood score.
+6. `scoring.score_to_label` maps that score to a guess and reader-facing label.
+7. `audit.log_decision` records the scores and decision; `/submit` returns it.
 
 
 ---
@@ -53,28 +62,41 @@ XinBao Chen
 
 ### Signal one — the model signal
 
-**What it measures:**
+**What it measures:** How predictable the text is using model perplexity. Lower
+perplexity becomes a higher AI-likelihood score.
 
-**Why that might differ between human and AI writing:**
+**Why that might differ between human and AI writing:** AI text often uses
+common, highly predictable word sequences, while human writing is often more
+surprising and varied.
 
-**What it can't see:**
+**What it can't see:** Predictability is not authorship. Plain writing, short
+sentences, second-language writing, or familiar vocabulary can look
+machine-written; unusual human prose can look human because it is hard to
+predict.
 
 ### Signal two — the style signal
 
-**What it measures:**
+**What it measures:** Sentence-length variation, type-token ratio (vocabulary
+variety), and punctuation density, normalized into a 0–1 AI-likelihood score.
 
-**Why that might differ between human and AI writing:**
+**Why that might differ between human and AI writing:** AI text often has
+regular sentence shapes, repeated vocabulary, and consistent punctuation,
+while human drafts tend to vary more.
 
-**What it can't see:**
+**What it can't see:** It cannot understand meaning, facts, intent, or
+authorship. Typos, pasted quotations, formatting changes, and broken-up
+sentences can change the score without changing who wrote the text.
 
 ### The combining rule
 
 <!-- Write the rule in words, then give the numbers. What happens when the two
      signals disagree? -->
 
-**The rule:**
+**The rule:** Treat both signals as evidence, not proof. Use a weighted average;
+when they disagree, the result moves toward the middle and is more likely to
+be labeled unsure.
 
-**The numbers:**
+**The numbers:** `0.50 * model_score + 0.50 * style_score`
 
 **Where it lives:** `scoring.py::combine_signals`
 
@@ -83,6 +105,70 @@ XinBao Chen
 
 **A case where my two signals split, and what my rule does with it:**
 
+For a plain human submission, the model score might be `0.72` while the style
+score is `0.28`. The combined score is `0.50`, so the service says unsure
+instead of making a confident accusation.
+
+### False-positive trace
+
+A real writer submits plain, carefully edited work. The model returns `0.78`
+because the word choices are predictable; the style signal returns `0.66`.
+The combined score is `0.72`, so the writer sees a high-confidence AI label.
+They can send the `content_id` and an explanation to `POST /appeal`; the
+original decision stays in the append-only log and the item becomes
+`under_review`.
+
+### Endpoint contracts
+
+#### `POST /submit`
+
+**Request**
+
+```json
+{
+  "text": "The text to evaluate.",
+  "creator_id": "writer-123"
+}
+```
+
+**Response**
+
+```json
+{
+  "content_id": "generated-id",
+  "guess": "human | unsure | ai",
+  "confidence": 0.72,
+  "label": "Reader-facing explanation.",
+  "model_score": 0.78,
+  "style_score": 0.66
+}
+```
+
+All scores are numbers from `0.0` to `1.0`; `content_id` is needed to appeal.
+
+#### `POST /appeal`
+
+**Request**
+
+```json
+{
+  "content_id": "generated-id",
+  "reasoning": "I wrote and revised this submission myself."
+}
+```
+
+**Response**
+
+```json
+{
+  "ok": true,
+  "content_id": "generated-id",
+  "status": "under_review"
+}
+```
+
+The endpoint requires an existing content ID, logs the reasoning, and does not
+automatically re-score the text.
 
 
 ---
