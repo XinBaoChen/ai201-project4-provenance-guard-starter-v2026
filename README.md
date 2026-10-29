@@ -215,6 +215,15 @@ $ curl -X POST http://127.0.0.1:5000/submit \
 
 ```json
 
+{
+  "content_id": "8c2c2d7f0a6d4bbf9d5a12b1c8b7e321",
+  "guess": null,
+  "confidence": null,
+  "label": null,
+  "model_score": 0.3549,
+  "style_score": null
+}
+
 ```
 
 **An appeal**
@@ -236,6 +245,23 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 ```
 
 ```json
+
+{
+  "count": 1,
+  "entries": [
+    {
+      "timestamp": "2026-10-28T21:00:00+00:00",
+      "content_id": "8c2c2d7f0a6d4bbf9d5a12b1c8b7e321",
+      "creator_id": "writer-1",
+      "guess": null,
+      "model_score": 0.3549,
+      "style_score": null,
+      "combined_score": null,
+      "label": null,
+      "status": "decided"
+    }
+  ]
+}
 
 ```
 
