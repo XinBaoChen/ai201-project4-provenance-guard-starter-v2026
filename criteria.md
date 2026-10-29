@@ -46,9 +46,15 @@ Two things worth knowing before you pick numbers:
 
 <!-- Your criterion. It must name a number. -->
 
+Of 10 pieces of writing I wrote myself, at most 1 is labelled
+`high-confidence AI` in each evaluation trial.
+
 
 
 **Why this target:**
+
+One false positive in ten is already serious for a real writer, so this keeps
+the system cautious even if it lets some AI text through.
 
 
 
@@ -58,9 +64,15 @@ Two things worth knowing before you pick numbers:
 
 <!-- Your criterion. -->
 
+At least 8 of 10 clearly AI-written samples score at or above `0.65`, and at
+least 8 of 10 clearly human-written samples score at or below `0.35`.
+
 
 
 **Why this target:**
+
+The two groups should be separated enough to make the high-confidence labels
+useful, while leaving the `0.35` to `0.65` band available for uncertainty.
 
 
 
@@ -70,9 +82,15 @@ Two things worth knowing before you pick numbers:
 
 <!-- Your criterion. -->
 
+All three labels—`high-confidence human`, `unsure`, and `high-confidence AI`
+—must each be produced by at least one valid submission in a calibration run.
+
 
 
 **Why this target:**
+
+Every label is part of the promised contract. If one is unreachable, readers
+cannot receive the decision the interface claims to support.
 
 
 
@@ -82,9 +100,16 @@ Two things worth knowing before you pick numbers:
 
 <!-- Your criterion. -->
 
+For 5 valid submissions followed by 5 valid appeals, all 5 appeals must return
+success, change the matching content to `under_review`, and create a separate
+appeal entry in the audit log.
+
 
 
 **Why this target:**
+
+An appeal is the safety net for false positives, so it must be observable and
+reliable rather than merely accepted with a polite JSON shrug.
 
 
 
@@ -94,9 +119,17 @@ Two things worth knowing before you pick numbers:
 
 <!-- Your criterion. -->
 
+For each of these malformed requests—missing `text`, empty `text`, non-string
+`text`, and text over the configured maximum—the service must return a
+documented 4xx response, never a 5xx response, and write a rejection entry
+when the request is refused.
+
 
 
 **Why this target:**
+
+Bad input is normal at an API boundary. A clear client error protects the
+service from crashes and gives callers a traceable explanation of rejection.
 
 
 
