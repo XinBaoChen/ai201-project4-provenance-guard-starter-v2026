@@ -64,8 +64,14 @@ def sentence_length_spread(text: str) -> float:
     `stdev` raises on fewer than two values. Decide what that should return
     before the attack set decides for you.
     """
-    # TODO: replace this
-    return 0.0
+    lengths = [len(words(sentence)) for sentence in sentences(text)]
+    lengths = [length for length in lengths if length > 0]
+    if len(lengths) < 2:
+        return 0.0
+    mean = statistics.mean(lengths)
+    if mean == 0:
+        return 0.0
+    return round(statistics.stdev(lengths) / mean, 4)
 
 
 def type_token_ratio(text: str) -> float:
@@ -80,8 +86,10 @@ def type_token_ratio(text: str) -> float:
     directly comparable on it, and if your test inputs vary a lot in length,
     that alone can look like a signal.
     """
-    # TODO: replace this
-    return 0.0
+    tokens = words(text)
+    if not tokens:
+        return 0.0
+    return round(len(set(tokens)) / len(tokens), 4)
 
 
 def punctuation_density(text: str) -> float:
@@ -94,8 +102,11 @@ def punctuation_density(text: str) -> float:
         more interesting than full stops, because they vary more between
         writers.
     """
-    # TODO: replace this
-    return 0.0
+    tokens = words(text)
+    if not tokens:
+        return 0.0
+    punctuation = re.findall(r"[,;:!?—-]", text)
+    return round(len(punctuation) / len(tokens), 4)
 
 
 # ── Combining them ───────────────────────────────────────────────────────────
@@ -122,8 +133,28 @@ def style_signal(text: str) -> float:
     you trust it. Plain and ordinary, not formal: formal prose reads as *human*
     to signal one, and it is plain writing that gets accused.
     """
-    # TODO: replace this
-    return 0.5
+    tokens = words(text)
+    sentence_count = len(sentences(text))
+    if not tokens:
+        return 0.5
+
+    spread = sentence_length_spread(text)
+    spread_score = 1.0 / (1.0 + spread) if sentence_count > 1 else 0.5
+    vocabulary_score = 1.0 - type_token_ratio(text)
+    punctuation_score = 1.0 - min(punctuation_density(text) / 0.15, 1.0)
+
+    return round(
+        min(
+            max(
+                0.4 * spread_score
+                + 0.4 * vocabulary_score
+                + 0.2 * punctuation_score,
+                0.0,
+            ),
+            1.0,
+        ),
+        4,
+    )
 
 
 if __name__ == "__main__":

@@ -31,6 +31,8 @@ from flask import Flask, jsonify, request
 import audit
 import config
 import detector
+import scoring
+import stylometry
 
 app = Flask(__name__)
 
@@ -223,20 +225,24 @@ def submit():
 
     content_id = uuid.uuid4().hex
     model_score = detector.model_signal(text)
+    style_score = stylometry.style_signal(text)
+    combined_score = scoring.combine_signals(model_score, style_score)
     entry = audit.log_decision(
         content_id=content_id,
         creator_id=creator_id,
         model_score=model_score,
+        style_score=style_score,
+        combined_score=combined_score,
         status="decided",
     )
 
     return jsonify({
         "content_id": content_id,
         "guess": entry["guess"],
-        "confidence": None,
+        "confidence": combined_score,
         "label": None,
         "model_score": model_score,
-        "style_score": None,
+        "style_score": style_score,
     })
 
 

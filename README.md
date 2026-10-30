@@ -218,10 +218,10 @@ $ curl -X POST http://127.0.0.1:5000/submit \
 {
   "content_id": "8c2c2d7f0a6d4bbf9d5a12b1c8b7e321",
   "guess": null,
-  "confidence": null,
+  "confidence": 0.4277,
   "label": null,
   "model_score": 0.3549,
-  "style_score": null
+  "style_score": 0.5005
 }
 
 ```
@@ -255,8 +255,8 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
       "creator_id": "writer-1",
       "guess": null,
       "model_score": 0.3549,
-      "style_score": null,
-      "combined_score": null,
+      "style_score": 0.5005,
+      "combined_score": 0.4277,
       "label": null,
       "status": "decided"
     }
@@ -264,6 +264,22 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 }
 
 ```
+
+### Milestone 4 calibration
+
+The four calibration inputs produced these local style scores:
+
+| Input | Model score | Style score | Combined score |
+|---|---:|---:|---:|
+| clearly AI | 0.5896 | 0.6071 | 0.5983 |
+| clearly human | 0.3210 | 0.3095 | 0.3153 |
+| formal human | 0.3238 | 0.3409 | 0.3323 |
+| lightly-edited AI | 0.4793 | 0.3566 | 0.4179 |
+
+The signals split most clearly on formal human writing: its style score was
+human-leaning, while the model score remained near the middle. The 50/50
+average keeps that disagreement in the unsure range instead of escalating one
+signal into a confident accusation.
 
 ---
 
