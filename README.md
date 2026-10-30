@@ -1,5 +1,7 @@
 # Provenance Guard
 XinBao Chen
+
+**Repository URL:** https://github.com/XinBaoChen/ai201-project4-provenance-guard-starter-v2026
 > ### 👋 Start here
 >
 > **New to this repo? Read [RUNNING.md](RUNNING.md) first.**
@@ -302,15 +304,23 @@ signal into a confident accusation.
 
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I asked for help tracing the submission path and naming
+  the blind spots of the model and style signals.
+- *What came back:* The response identified the seven pipeline stages and
+  explained that predictability is not authorship, while stylometry cannot
+  understand meaning.
+- *What I changed:* I checked those claims against `detector.py` and
+  `stylometry.py`, then wrote the final path and blind spots in my own words.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I asked for a focused check of the `/submit` and
+  `/appeal` contracts after implementing the signals.
+- *What came back:* The response found that both scores needed to appear in the
+  response and audit log, and suggested boundary tests for all three labels.
+- *What I changed:* I ran the tests, kept the 50/50 rule, rewrote the labels to
+  avoid accusing writers, and verified the appeal changes status to
+  `under_review`.
 
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
 
